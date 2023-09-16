@@ -245,6 +245,25 @@ In my case, Although the nginx -t command was successful, the system could not s
 
 After a little research, I realized that the problem was caused by internal port forwarding.
 
+
+
+
+But for HA projects we need to reach all the extensions that we created in code as functions. That's why we need to reconfigure our nginx conf as below;
+
+```
+server {
+    listen 80;
+    server_name yuzucukursuapi.com www.yuzucukursuapi.com;
+
+    location / {
+        rewrite ^/(.*)$ /$1 break;
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+```
 ```
 sudo setsebool -P httpd_can_network_connect on
 systemctl restart nginx.service
