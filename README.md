@@ -269,6 +269,141 @@ sudo setsebool -P httpd_can_network_connect on
 systemctl restart nginx.service
 ```
 
+## 6. Running a Java Application and listening by using Nginx Server
+
+Now we are creating a JAVA Spring Boot Application. To configure it, We need to install or upgrade our java and mvn versions in server
+```
+dnf search openjdk
+dnf search openjdk | grep java-17
+sudo dnf install java-17-openjdk
+sudo dnf install java-17-openjdk-devel
+java --version
+```
+export the specific version to JAVA_HOME path
+```
+sudo vim /etc/profile
+export JAVA_HOME="Your path to jdk folder"
+export PATH=$JAVA_HOME/bin:$PATH
+source /etc/profile
+logging in to new terminal
+java -version
+```
+Installing spring-boot
+```
+curl -s "https://get.sdkman.io" | bash
+source "/root/.sdkman/bin/sdkman-init.sh"
+sdk install springboot
+sdk install gradle
+spring version
+```
+
+There is a website to easily create spring boot projects; I add the project to the https://start.spring.io/ Linux server with the variables I created here.
+```
+cd tariksjavaapp
+mvn spring-boot:run
+if you get an error when running this command
+mvn clean install
+mvn spring-boot:run
+vim src\main\java\com\tarikjava\tariksjavaapp\TariksjavaappApplication.java
+```
+
+```
+package com.tarikjava.tariksjavaapp;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@SpringBootApplication
+public class TariksjavaappApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(TariksjavaappApplication.class, args);
+    }
+}
+
+@RestController
+class GreetingsController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello World";
+    }
+
+    @GetMapping("/merhaba")
+    public String merhaba() {
+        return "Merhaba";
+    }
+
+    @GetMapping("/hi")
+    public String hi() {
+        return "Hi There";
+    }
+}
+
+
+```
+
+```
+vim /etc/systemd/systemc/tariksjavaapp.service
+
+[Unit]
+Description=My Spring Boot Application
+
+[Service]
+ExecStart=/usr/lib/jvm/java-17/bin/java -jar /home/admin/Downloads/tariksjavaapp/target/tariksjavaapp-0.0.1-SNAPSHOT.jar
+WorkingDirectory=/home/admin/Downloads/tariksjavaapp/target/
+Restart=always
+User=admin
+Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+[Install]
+WantedBy=multi-user.target
+```
+```
+sudo systemctl daemon-reload
+sudo systemctl start tariksjavaapp.service
+sudo systemctl enable tariksjavaapp.cservice
+wait a second then send request
+curl localhost:8080/hi
+```
+Creating a service for spring-boot is success, now it's time to configure nginx to serve this address
+```
+vim /etc/nginx/sites-available/javaapplication.com
+
+server {
+    listen 80;
+    server_name javaapplication.com www.javaapplication.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}
+
+```
+
+```
+ln -s /etc/nginx/sites-available/javaapplication.com /etc/nginx/sites-enabled/
+nginx -t
+sudo systemctl restart nginx.service
+```
+
+Now let's try to send a request to the domain we specified. If the result we want is returned, the installation is successful.
+```
+curl javaapplication.com(merhaba
+```
+
+
 I will detail these topics with more functional examples. see you
 
 
