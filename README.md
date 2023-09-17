@@ -409,6 +409,11 @@ sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
 sudo firewall-cmd --reload
 ```
 
+to run vue.js project I'm using pm2 commands of npm
+```
+sudo npm install pm2 -g
+pm2 start npm --name "serve" -- run serve -- --port 3000
+```
 I will detail these topics with more functional examples. see you
 
 
