@@ -403,6 +403,11 @@ Now let's try to send a request to the domain we specified. If the result we wan
 curl javaapplication.com(merhaba
 ```
 
+##Opening of 443 port to connect from another remote server
+```
+sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
+sudo firewall-cmd --reload
+```
 
 I will detail these topics with more functional examples. see you
 
