@@ -13,6 +13,7 @@ If you get an error when starting, try following the step below.
 ```
 sudo apachectl stop
 sudo systemctl restart nginx
+setenforce 0 
 ```
 
 now nginx is enabled and started.
