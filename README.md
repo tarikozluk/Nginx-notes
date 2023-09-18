@@ -403,8 +403,49 @@ Now let's try to send a request to the domain we specified. If the result we wan
 ```
 curl javaapplication.com(merhaba
 ```
+## Redirect to the destinations without ssl to secure adress (http://tarikapp.com => htpps://tarikapp.com)
 
-##Opening of 443 port to connect from another remote server
+nginx conf for this setting:
+```
+server {
+    listen 80;
+    server_name tarikapp.com www.tarikapp.com;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+}
+
+server {
+    listen 443 ssl;
+    server_name tarikapp.com www.tarikapp.com;
+
+    ssl_certificate /etc/ssl/certs/tarikapp.com.pem;
+    ssl_certificate_key /etc/ssl/certs/tarikapp.com.key;
+
+    ssl_protocols TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+}
+
+```
+
+
+
+## Opening of 443 port to connect from another remote server
 ```
 sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
 sudo firewall-cmd --reload
